@@ -3,18 +3,58 @@ import pandas as pd
 import time
 import random
 from datetime import datetime
+import nltk
+import os
+import sys
+
+# ============ DOWNLOAD NLTK DATA (FIX FOR STREAMLIT CLOUD) ============
+@st.cache_resource
+def download_nltk_data():
+    """Download required NLTK data for text processing"""
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt')
+    
+    try:
+        nltk.data.find('tokenizers/punkt_tab')
+    except LookupError:
+        nltk.download('punkt_tab')
+        
+    try:
+        nltk.data.find('corpora/stopwords')
+    except LookupError:
+        nltk.download('stopwords')
+        
+    try:
+        nltk.data.find('corpora/wordnet')
+    except LookupError:
+        nltk.download('wordnet')
+
+# Run NLTK download
+download_nltk_data()
+# =======================================================================
 
 # Import modules
 from modules.question_generator import QuestionGenerator
 from modules.preprocessing import TextPreprocessor
 from modules.evaluator import AnswerEvaluator
 from modules.feedback import FeedbackGenerator
-from modules.gemini_question import GeminiQuestionGenerator
-from modules.gemini_feedback import GeminiFeedbackGenerator
 from modules.config import Config
 from modules.performance import PerformanceMetrics, HumanEvaluator
 from modules.batch_test import BatchTester
 from modules.visualizations import PerformanceVisualizer
+
+# Try to import Gemini modules (optional - may fail on cloud)
+try:
+    from modules.gemini_question import GeminiQuestionGenerator
+    from modules.gemini_feedback import GeminiFeedbackGenerator
+    GEMINI_IMPORT_SUCCESS = True
+except ImportError:
+    GEMINI_IMPORT_SUCCESS = False
+    GeminiQuestionGenerator = None
+    GeminiFeedbackGenerator = None
+    print("⚠️ Gemini modules not available - using question bank only")
 
 # Initialize performance metrics in session state
 if 'performance' not in st.session_state:
@@ -168,7 +208,7 @@ def init_session_state():
         'total_attempts': 0,
         'session_start': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'history': [],
-        'use_gemini': Config.is_gemini_available(),
+        'use_gemini': Config.is_gemini_available() if GEMINI_IMPORT_SUCCESS else False,
         'gemini_working': False,
         'gemini_model': None,
         'available_models': [],
@@ -197,8 +237,8 @@ def load_modules():
             'feedback_gen': FeedbackGenerator()
         }
         
-        # Add Gemini modules if available
-        if Config.is_gemini_available():
+        # Add Gemini modules if available and import succeeded
+        if GEMINI_IMPORT_SUCCESS and Config.is_gemini_available():
             try:
                 gemini_question = GeminiQuestionGenerator()
                 gemini_feedback = GeminiFeedbackGenerator()
@@ -265,41 +305,13 @@ with st.sidebar:
             - Check internet connection
             - Using question bank mode
             """)
-            
-            # Add model test button
-            if st.button("🔄 Test Gemini Connection"):
-                try:
-                    from google import genai
-                    client = genai.Client(api_key=Config.GEMINI_API_KEY)
-                    models = client.models.list()
-                    
-                    st.write("✅ Available models:")
-                    working_models = []
-                    for model in models:
-                        if 'generateContent' in model.supported_actions:
-                            model_name = model.name.replace('models/', '')
-                            st.write(f"• {model_name}")
-                            working_models.append(model_name)
-                    
-                    if working_models:
-                        st.success(f"Found {len(working_models)} working models")
-                        st.info(f"Suggested: {working_models[0]}")
-                    else:
-                        st.error("No models found with generateContent support")
-                except Exception as e:
-                    st.error(f"Connection error: {e}")
-        
-        # Add option to toggle AI features
-        ai_enhanced = st.checkbox("✨ Enable AI Enhancements", value=True)
-        st.session_state.ai_enhanced = ai_enhanced
     else:
         st.warning("""
-        ⚠️ **Gemini API not configured**
+        ⚠️ **Using Question Bank Mode**
         
-        Using question bank mode. To enable AI:
-        1. Get key from [aistudio.google.com](https://aistudio.google.com)
+        To enable AI features:
+        1. Get API key from [aistudio.google.com](https://aistudio.google.com)
         2. Create `.env` file with GEMINI_API_KEY=your_key
-        3. Install new package: pip install google-genai
         """)
     
     st.markdown("---")
@@ -393,7 +405,6 @@ with st.sidebar:
             </div>
             """, unsafe_allow_html=True)
             
-            # Interpretation
             if metrics['r2_score'] > 0.7:
                 st.success("✅ Strong correlation with human judgment")
             elif metrics['r2_score'] > 0.5:
@@ -416,8 +427,6 @@ with st.sidebar:
     
     if collecting:
         st.info("📊 Data collection ON")
-        
-        # Add human rating slider for ground truth
         st.markdown("### 🎯 Rate this answer (0-100)")
         human_score = st.slider("Human Score:", 0, 100, st.session_state.human_score)
         st.session_state.human_score = human_score
@@ -440,8 +449,6 @@ with st.sidebar:
                 
                 if not results_df.empty:
                     st.success(f"✅ Completed {len(results_df)} tests!")
-                    
-                    # Display results summary
                     batch_metrics = tester.get_performance_summary(results_df)
                     
                     col1, col2, col3 = st.columns(3)
@@ -452,11 +459,9 @@ with st.sidebar:
                     with col3:
                         st.metric("MAE", f"{batch_metrics.get('mae', 0):.2f}")
                     
-                    # Show report
                     report = tester.generate_report(results_df)
                     st.text(report)
                     
-                    # Option to save results
                     if st.button("💾 Save Batch Results"):
                         filename = tester.save_results()
                         if filename:
@@ -507,7 +512,7 @@ with st.sidebar:
         init_session_state()
         st.rerun()
 
-# Define question generation functions (outside the column blocks)
+# Define question generation functions
 def generate_new_question(force_new=True):
     """Generate a new question using available sources"""
     question_data = None
@@ -520,7 +525,6 @@ def generate_new_question(force_new=True):
         
         try:
             with st.spinner("🤖 Generating AI question..."):
-                # Method 1: Generate Q&A pair (best)
                 question_data = modules['gemini_question'].generate_with_answer(
                     st.session_state.selected_topic,
                     st.session_state.difficulty
@@ -532,7 +536,6 @@ def generate_new_question(force_new=True):
                     question_data['difficulty'] = st.session_state.difficulty
                     return question_data
                 
-                # Method 2: Generate question only
                 question = modules['gemini_question'].generate_question(
                     st.session_state.selected_topic,
                     st.session_state.difficulty
@@ -543,17 +546,6 @@ def generate_new_question(force_new=True):
                     question['source'] = 'gemini_ai'
                     question['difficulty'] = st.session_state.difficulty
                     return question
-                
-                # Method 3: Try with different difficulty
-                if st.session_state.difficulty != "medium":
-                    question = modules['gemini_question'].generate_question(
-                        st.session_state.selected_topic,
-                        "medium"
-                    )
-                    if question and question.get('question'):
-                        question['source'] = 'gemini_ai'
-                        question['difficulty'] = 'medium'
-                        return question
                         
         except Exception as e:
             st.warning(f"AI generation temporary issue: {str(e)}")
@@ -572,7 +564,6 @@ def generate_new_question(force_new=True):
 def generate_different_question():
     """Generate a completely different question"""
     
-    # Reset used questions tracking for this session if needed
     if st.session_state.get('force_reset', False):
         if 'gemini_question' in modules:
             modules['gemini_question'].used_questions = set()
@@ -585,11 +576,10 @@ def generate_different_question():
         'gemini_question' in modules):
         
         try:
-            # Try with increasing difficulty to get variety
             difficulties = ["easy", "medium", "hard", "expert"]
             start_idx = difficulties.index(st.session_state.difficulty)
             
-            for i in range(4):  # Try all difficulties
+            for i in range(4):
                 diff = difficulties[(start_idx + i) % 4]
                 
                 question_data = modules['gemini_question'].generate_question(
@@ -604,7 +594,6 @@ def generate_different_question():
                     question_data['source'] = 'gemini_ai'
                     return question_data
             
-            # If still no unique question, clear used questions and try again
             if 'gemini_question' in modules:
                 modules['gemini_question'].used_questions = set()
             question_data = modules['gemini_question'].generate_question(
@@ -632,7 +621,6 @@ col1, col2 = st.columns([2, 1])
 with col1:
     st.markdown("## 📝 Interview Practice")
     
-    # Question generation buttons
     btn_col1, btn_col2, btn_col3 = st.columns(3)
     
     with btn_col1:
@@ -654,7 +642,6 @@ with col1:
     with btn_col2:
         if st.session_state.question_generated:
             if st.button("🔄 Practice Another", use_container_width=True):
-                # Try to get different question
                 question_data = None
                 attempts = 0
                 
@@ -705,7 +692,6 @@ with col1:
     
     # Display current question
     if st.session_state.current_question:
-        # Question metadata
         meta_col1, meta_col2, meta_col3 = st.columns(3)
         
         with meta_col1:
@@ -735,14 +721,12 @@ with col1:
             else:
                 st.markdown(f"📊 **{st.session_state.selected_topic}**")
         
-        # Question box
         st.markdown(f"""
         <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 5px solid #667eea; margin: 1rem 0;">
             <h4 style="margin: 0; color: #2c3e50;">{st.session_state.current_question}</h4>
         </div>
         """, unsafe_allow_html=True)
         
-        # Answer input
         answer = st.text_area(
             "✍️ Your Answer:",
             height=200,
@@ -752,13 +736,11 @@ with col1:
         )
         st.session_state.last_answer = answer
         
-        # Answer stats
         if answer:
             words = len(answer.split())
             chars = len(answer)
             st.caption(f"📝 {words} words | {chars} characters")
         
-        # Submit button
         col_submit1, col_submit2 = st.columns([3, 1])
         
         with col_submit1:
@@ -768,26 +750,21 @@ with col1:
                 else:
                     try:
                         with st.spinner("🔍 Analyzing your answer..."):
-                            
-                            # Progress tracking
                             progress = st.progress(0)
                             status = st.empty()
                             
-                            # Step 1: Preprocess
                             status.text("📝 Preprocessing text...")
                             progress.progress(20)
                             time.sleep(0.2)
                             
                             processed_user = modules['preprocessor'].preprocess(answer)
                             
-                            # Step 2: Extract keywords
                             status.text("🔑 Extracting keywords...")
                             progress.progress(40)
                             time.sleep(0.2)
                             
                             user_keywords = modules['preprocessor'].extract_keywords(answer)
                             
-                            # Step 3: Evaluate
                             status.text("📊 Evaluating answer quality...")
                             progress.progress(60)
                             time.sleep(0.2)
@@ -798,7 +775,6 @@ with col1:
                                 st.session_state.selected_topic
                             )
                             
-                            # Step 4: Generate feedback
                             status.text("💡 Generating feedback...")
                             progress.progress(80)
                             time.sleep(0.2)
@@ -812,7 +788,6 @@ with col1:
                                 None
                             )
                             
-                            # Step 5: Gemini AI analysis (if available)
                             gemini_feedback = None
                             gemini_analysis = None
                             
@@ -826,7 +801,6 @@ with col1:
                                 
                                 ideal_answer = st.session_state.current_question_data.get('answer', '')
                                 
-                                # Get detailed feedback
                                 gemini_feedback = modules['gemini_feedback'].generate_feedback(
                                     st.session_state.current_question,
                                     ideal_answer,
@@ -835,14 +809,12 @@ with col1:
                                     st.session_state.selected_topic
                                 )
                                 
-                                # Get structured analysis
                                 gemini_analysis = modules['gemini_feedback'].generate_detailed_analysis(
                                     st.session_state.current_question,
                                     answer,
                                     st.session_state.selected_topic
                                 )
                             
-                            # Complete
                             progress.progress(100)
                             status.text("✅ Analysis complete!")
                             time.sleep(0.3)
@@ -850,29 +822,23 @@ with col1:
                             progress.empty()
                             status.empty()
                             
-                            # Store results
                             st.session_state.feedback = feedback
                             st.session_state.gemini_feedback = gemini_feedback
                             st.session_state.gemini_analysis = gemini_analysis
                             st.session_state.answer_submitted = True
                             st.session_state.total_attempts += 1
                             
-                            # ============ ADD PERFORMANCE DATA ============
                             if st.session_state.collecting_data:
-                                # Get ideal answer keywords for ground truth
                                 ideal_answer = st.session_state.current_question_data.get('answer', '')
                                 actual_concepts = modules['preprocessor'].extract_keywords(ideal_answer)
                                 
-                                # Add to performance metrics
                                 st.session_state.performance.add_evaluation(
                                     system_score=evaluation['score'],
                                     human_score=st.session_state.human_score,
                                     system_concepts=user_keywords,
                                     actual_concepts=actual_concepts
                                 )
-                            # ============================================
                             
-                            # Add to history
                             st.session_state.history.append({
                                 'timestamp': datetime.now().strftime("%H:%M:%S"),
                                 'topic': st.session_state.selected_topic,
@@ -894,7 +860,6 @@ with col1:
                 st.rerun()
     
     else:
-        # Welcome message
         st.info("""
         👆 **Click 'New Question' to start your interview practice!**
         
@@ -905,7 +870,6 @@ with col1:
         4. Get instant feedback and analysis
         """)
         
-        # Show preview
         with st.expander("📋 Sample Questions by Topic"):
             samples = {
                 "HR Interview": [
@@ -928,17 +892,15 @@ with col1:
             for q in samples.get(selected_topic, ["Select a topic to see sample questions"]):
                 st.markdown(f"• {q}")
 
-# ============ IMPROVED ANALYSIS SECTION - NO WHITE BOXES ============
+# ============ ANALYSIS SECTION ============
 with col2:
     st.markdown("## 📊 Performance Summary")
     
     if st.session_state.feedback:
         fb = st.session_state.feedback
         
-        # Score Display - Large and Clear (No white boxes!)
         score = fb['score']
         
-        # Color-coded score card
         if score >= 70:
             st.markdown(f"""
             <div class="score-card-excellent">
@@ -961,7 +923,6 @@ with col2:
             </div>
             """, unsafe_allow_html=True)
         
-        # Level and Confidence in one row (compact)
         col_lev, col_conf = st.columns(2)
         with col_lev:
             st.metric("🏆 Level", fb['level'])
@@ -969,20 +930,14 @@ with col2:
             st.metric("🎯 Confidence", fb['confidence'])
         
         st.markdown("---")
-        
-        # Key Insights - Compact and Useful
         st.markdown("### 🔍 Key Insights")
-        
-        # Word count with icon
         st.markdown(f"📝 **Word Count:** {fb['word_count']} words")
         
-        # Examples indicator
         if fb.get('has_examples', False):
             st.success("✅ **Good:** Includes examples")
         else:
             st.warning("⚠️ **Improvement:** Add examples to strengthen your answer")
         
-        # Component Scores - Progress bars (visual and compact)
         st.markdown("### 📊 Component Breakdown")
         
         sem_score = fb['detailed_analysis']['semantic_score']
@@ -1001,7 +956,6 @@ with col2:
         st.markdown(f"**Answer Length** - {len_score}%")
         st.progress(len_score/100)
         
-        # Quick tip based on lowest score (helpful, not wasted space)
         st.markdown("---")
         st.markdown("### 💡 Quick Tip")
         
@@ -1013,22 +967,20 @@ with col2:
         }
         lowest = min(scores, key=scores.get)
         
-        tips = {
+        tips_dict = {
             'Semantic': "🎯 Focus on directly answering the question. Use keywords from the question in your response.",
             'Keyword': "📚 Use more technical terms related to the topic. Review key concepts before answering.",
             'Structure': "📝 Structure your answer with clear introduction, body, and conclusion. Use transition words.",
             'Length': "✏️ Provide more details and examples. Aim for 50-100 words per answer for better scores."
         }
         
-        st.info(tips[lowest])
+        st.info(tips_dict[lowest])
         
-        # Show AI Analysis status (collapsible to save space)
         if st.session_state.gemini_feedback:
             with st.expander("🤖 View AI Detailed Analysis"):
                 st.markdown(st.session_state.gemini_feedback)
     
     else:
-        # Empty state - show helpful information instead of blank white boxes
         st.info("👈 **Submit an answer to see your performance analysis**")
         
         st.markdown("---")
@@ -1058,7 +1010,6 @@ if st.session_state.answer_submitted and st.session_state.feedback:
     
     fb = st.session_state.feedback
     
-    # Detailed metrics
     st.markdown("### Component Scores")
     col_a, col_b, col_c, col_d = st.columns(4)
     
@@ -1071,7 +1022,6 @@ if st.session_state.answer_submitted and st.session_state.feedback:
     with col_d:
         st.metric("Structure Quality", f"{fb['detailed_analysis']['structure_score']}%")
     
-    # Strengths and weaknesses
     col_x, col_y = st.columns(2)
     
     with col_x:
@@ -1120,11 +1070,9 @@ if st.session_state.answer_submitted and st.session_state.feedback:
         else:
             st.markdown("✨ Great job! No major issues.")
     
-    # Regular feedback
     st.markdown("### 📝 Summary")
     st.info(fb.get('summary', 'No summary available'))
     
-    # Gemini AI Feedback (if available)
     if st.session_state.gemini_feedback:
         st.markdown("### 🤖 Gemini AI Analysis")
         with st.container():
@@ -1134,7 +1082,6 @@ if st.session_state.answer_submitted and st.session_state.feedback:
             </div>
             """, unsafe_allow_html=True)
     
-    # Gemini structured analysis (if available)
     if st.session_state.gemini_analysis:
         analysis = st.session_state.gemini_analysis
         
@@ -1153,19 +1100,16 @@ if st.session_state.answer_submitted and st.session_state.feedback:
                 for c in analysis['missing_concepts']:
                     st.markdown(f"• **{c}**")
     
-    # Suggestions
     if fb.get('suggestions'):
         st.markdown("### 💡 Specific Suggestions")
         for i, tip in enumerate(fb['suggestions'][:5], 1):
             st.markdown(f"{i}. {tip}")
     
-    # Sample answer
     if st.session_state.current_question_data and st.session_state.current_question_data.get('answer'):
         with st.expander("📚 View Ideal Answer"):
             ideal = st.session_state.current_question_data['answer']
             st.markdown(ideal)
             
-            # Extract and show key terms
             key_terms = modules['preprocessor'].extract_keywords(ideal)
             if key_terms:
                 st.markdown("**Key terms to include:**")
@@ -1178,10 +1122,8 @@ if st.session_state.history:
     st.markdown("---")
     st.markdown("## 📜 Practice History")
     
-    # Create history dataframe
-    history_df = pd.DataFrame(st.session_state.history[-10:])  # Last 10 attempts
+    history_df = pd.DataFrame(st.session_state.history[-10:])
     
-    # Color code scores
     def color_score(val):
         if val >= 70:
             return 'background-color: #d4edda'
@@ -1193,7 +1135,6 @@ if st.session_state.history:
     styled_df = history_df.style.map(color_score, subset=['score'])
     st.dataframe(styled_df, use_container_width=True)
     
-    # Performance trend
     if len(st.session_state.history) >= 3:
         scores = [h['score'] for h in st.session_state.history[-5:]]
         st.markdown("### 📈 Recent Performance Trend")
@@ -1226,7 +1167,6 @@ with col4:
     else:
         st.markdown("Using Question Bank")
 
-# Auto-refresh for better UX
 if st.session_state.get('needs_refresh', False):
     st.session_state.needs_refresh = False
     st.rerun()
