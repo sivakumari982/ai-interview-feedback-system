@@ -1,0 +1,108 @@
+topic,question,answer
+Machine Learning,What is machine learning?,Machine learning is a subset of AI that enables systems to learn and improve from data without being explicitly programmed.
+Machine Learning,What is overfitting?,Overfitting occurs when a model learns training data too well including noise and performs poorly on new data.
+Machine Learning,Explain bias-variance tradeoff.,Bias is error from wrong assumptions. Variance is error from sensitivity to training data. The tradeoff balances model complexity.
+Data Structures,What is an array?,An array is a data structure that stores elements of the same type in contiguous memory locations.
+Data Structures,What is a linked list?,A linked list is a linear data structure where elements are stored in nodes and each node points to the next node.
+Data Structures,What is a stack?,A stack is a LIFO data structure where elements are added and removed from the top.
+DBMS,What is a database?,A database is an organized collection of data stored and accessed electronically.
+DBMS,What is SQL?,SQL is a programming language used to manage and manipulate relational databases.
+DBMS,What is normalization?,Normalization organizes data to reduce redundancy and improve integrity.
+HR Interview,Tell me about yourself.,I am a computer science student passionate about software development with experience in Python and web technologies.
+HR Interview,What are your strengths?,My strengths include quick learning problem-solving skills and teamwork.
+OOP Concepts,What is inheritance?,Inheritance allows a class to inherit properties and methods from another class.
+OOP Concepts,What is polymorphism?,Polymorphism allows objects to take multiple forms through method overriding and overloading.
+Machine Learning,What is linear regression?,Linear regression models the relationship between dependent and independent variables.
+Machine Learning,What is logistic regression?,Logistic regression is used for binary classification problems.
+Machine Learning,What are decision trees?,Decision trees split data based on feature values for prediction.
+Machine Learning,What are random forests?,Random forests combine multiple decision trees for better accuracy.
+Machine Learning,What is SVM?,SVM finds the optimal hyperplane for classification.
+Machine Learning,What is k-means clustering?,K-means groups similar data points into k clusters.
+Machine Learning,What is PCA?,PCA reduces dimensionality while preserving variance.
+Machine Learning,What is gradient descent?,Gradient descent optimizes model parameters.
+Machine Learning,What are neural networks?,Neural networks mimic biological neurons for learning.
+Machine Learning,What is backpropagation?,Backpropagation computes gradients for neural networks.
+Machine Learning,What is underfitting?,Underfitting happens when models are too simple.
+Machine Learning,What is cross-validation?,Cross-validation evaluates model performance on unseen data.
+Machine Learning,What is bias?,Bias is error from wrong assumptions in learning.
+Machine Learning,What is variance?,Variance is error from sensitivity to training data.
+Machine Learning,What is regularization?,Regularization prevents overfitting by adding penalties.
+Machine Learning,What is ensemble learning?,Ensemble learning combines multiple models.
+Machine Learning,What is boosting?,Boosting sequentially improves weak learners.
+Machine Learning,What is bagging?,Bagging trains multiple models on bootstrap samples.
+Machine Learning,What is feature scaling?,Feature scaling normalizes input features.
+Machine Learning,What is a confusion matrix?,Confusion matrix shows prediction results.
+Machine Learning,What is precision?,Precision measures accuracy of positive predictions.
+Machine Learning,What is recall?,Recall measures ability to find positive samples.
+Machine Learning,What is F1 score?,F1 score is harmonic mean of precision and recall.
+Machine Learning,What is transfer learning?,Transfer learning reuses pre-trained models.
+Data Structures,What is a queue?,Queues follow First-In-First-Out (FIFO) principle.
+Data Structures,What is a tree?,Trees are hierarchical data structures with nodes.
+Data Structures,What is a binary tree?,Binary trees have at most two children per node.
+Data Structures,What is a binary search tree?,"BST has left smaller, right larger values."
+Data Structures,What is a heap?,Heaps are complete binary trees with heap property.
+Data Structures,What is a hash table?,Hash tables map keys to values using hash functions.
+Data Structures,What is a graph?,Graphs consist of vertices connected by edges.
+Data Structures,What is BFS?,BFS explores nodes level by level in graphs.
+Data Structures,What is DFS?,DFS explores as far as possible along branches.
+Data Structures,What is quicksort?,Quicksort partitions arrays around a pivot.
+Data Structures,What is merge sort?,Merge sort divides and merges sorted subarrays.
+Data Structures,What is bubble sort?,Bubble sort repeatedly swaps adjacent elements.
+Data Structures,What is insertion sort?,Insertion sort builds sorted array one element at a time.
+Data Structures,What is selection sort?,Selection sort repeatedly selects minimum element.
+Data Structures,What is dynamic programming?,DP solves problems with overlapping subproblems.
+Data Structures,What is recursion?,Recursion solves problems by calling itself.
+Data Structures,What is Big O notation?,Big O describes algorithm time complexity.
+Data Structures,What is a deque?,Deque allows insertion/deletion at both ends.
+Data Structures,What is a priority queue?,Priority queue returns highest priority element.
+Data Structures,What is an AVL tree?,AVL trees are self-balancing binary search trees.
+Data Structures,What is a red-black tree?,Red-black trees are balanced binary search trees.
+Data Structures,What is Dijkstra's algorithm?,Dijkstra finds shortest paths in graphs.
+DBMS,What is a primary key?,Primary keys uniquely identify rows.
+DBMS,What is a foreign key?,Foreign keys reference primary keys in other tables.
+DBMS,What is an index?,Indexes speed up data retrieval.
+DBMS,What is a join?,Joins combine rows from multiple tables.
+DBMS,What is a transaction?,Transactions are units of work with ACID properties.
+DBMS,What is ACID?,ACID ensures database reliability.
+DBMS,What is a view?,Views are virtual tables based on queries.
+DBMS,What is a stored procedure?,Stored procedures are precompiled SQL code.
+DBMS,What is a trigger?,Triggers execute automatically on table events.
+DBMS,What is NoSQL?,NoSQL databases are non-relational.
+DBMS,What is denormalization?,Denormalization adds redundancy for performance.
+DBMS,What is a composite key?,Composite keys use multiple columns as primary key.
+DBMS,What is a candidate key?,Candidate keys can uniquely identify rows.
+DBMS,What is a super key?,Super keys are supersets of candidate keys.
+DBMS,What is a cluster index?,Cluster index determines physical order of data.
+DBMS,What is a non-cluster index?,Non-cluster index points to data location.
+DBMS,What is database sharding?,Sharding partitions data across servers.
+OOP Concepts,What is a class?,Classes are blueprints for creating objects.
+OOP Concepts,What is an object?,Objects are instances of classes.
+OOP Concepts,What is encapsulation?,Encapsulation bundles data with methods.
+OOP Concepts,What is abstraction?,Abstraction hides complex implementation details.
+OOP Concepts,What is a constructor?,Constructors initialize new objects.
+OOP Concepts,What is a destructor?,Destructors clean up object resources.
+OOP Concepts,What is method overloading?,"Overloading has same name, different parameters."
+OOP Concepts,What is method overriding?,Overriding redefines parent methods in children.
+OOP Concepts,What is an interface?,Interfaces define method signatures without implementation.
+OOP Concepts,What is an abstract class?,Abstract classes cannot be instantiated.
+OOP Concepts,What is composition?,Composition has parts that don't exist without whole.
+OOP Concepts,What is aggregation?,Aggregation has parts that can exist independently.
+OOP Concepts,What is dependency injection?,DI provides dependencies to objects.
+OOP Concepts,What is SOLID?,SOLID is principles for OOP design.
+OOP Concepts,What is the single responsibility principle?,Classes should have one reason to change.
+OOP Concepts,What is the open-closed principle?,"Open for extension, closed for modification."
+OOP Concepts,What is Liskov substitution?,Subtypes must be substitutable for base types.
+OOP Concepts,What is dependency inversion?,"Depend on abstractions, not concretions."
+HR Interview,What are your weaknesses?,I sometimes focus too much on details.
+HR Interview,Why should we hire you?,I bring relevant skills and strong work ethic.
+HR Interview,Where do you see yourself in 5 years?,I see myself in a technical leadership role.
+HR Interview,How do you handle pressure?,I prioritize tasks and communicate clearly.
+HR Interview,Describe a challenge you overcame.,I overcame a technical challenge through research.
+HR Interview,What is your greatest achievement?,Leading a team to complete a major project.
+HR Interview,Why do you want this job?,I am passionate about this company's mission.
+HR Interview,How do you work in a team?,I collaborate effectively and respect others.
+HR Interview,What is your work style?,I am organized and results-oriented.
+HR Interview,How do you handle criticism?,I view criticism as opportunity to improve.
+HR Interview,What motivates you?,Solving challenging problems motivates me.
+HR Interview,How do you prioritize work?,I use time management and task prioritization.
+HR Interview,What are your career goals?,I want to grow into a technical expert role.

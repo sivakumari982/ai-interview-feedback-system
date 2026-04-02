@@ -1,0 +1,68 @@
+{
+  "test_cases": [
+    {
+      "test_id": 1,
+      "topic": "Machine Learning",
+      "question": "Explain the bias-variance tradeoff.",
+      "user_answer": "Bias is error from wrong assumptions in the learning algorithm. Variance is error from sensitivity to small fluctuations in the training set. The tradeoff involves finding the right model complexity that minimizes total error.",
+      "human_score": 85,
+      "keywords": ["bias", "variance", "tradeoff", "underfitting", "overfitting", "model complexity"]
+    },
+    {
+      "test_id": 2,
+      "topic": "Machine Learning",
+      "question": "What is overfitting and how to prevent it?",
+      "user_answer": "Overfitting is when a model learns training data too well including noise. Prevention methods include cross-validation, regularization, more training data, and pruning.",
+      "human_score": 78,
+      "keywords": ["overfitting", "cross-validation", "regularization", "pruning", "noise"]
+    },
+    {
+      "test_id": 3,
+      "topic": "Data Structures",
+      "question": "What is a binary search tree?",
+      "user_answer": "A binary search tree is a tree data structure where each node has at most two children. For each node, left subtree contains smaller values and right subtree contains larger values.",
+      "human_score": 82,
+      "keywords": ["binary", "search", "tree", "node", "left", "right", "subtree"]
+    },
+    {
+      "test_id": 4,
+      "topic": "Data Structures",
+      "question": "Explain the difference between array and linked list.",
+      "user_answer": "Arrays store elements in contiguous memory locations with constant-time access but fixed size. Linked lists store elements non-contiguously with dynamic size but linear access time.",
+      "human_score": 88,
+      "keywords": ["array", "linked list", "contiguous", "memory", "access time", "dynamic"]
+    },
+    {
+      "test_id": 5,
+      "topic": "OOP Concepts",
+      "question": "Explain the four pillars of OOP.",
+      "user_answer": "The four pillars are Encapsulation (bundling data and methods), Inheritance (creating hierarchies), Polymorphism (many forms of methods), and Abstraction (hiding complexity).",
+      "human_score": 90,
+      "keywords": ["encapsulation", "inheritance", "polymorphism", "abstraction"]
+    },
+    {
+      "test_id": 6,
+      "topic": "DBMS",
+      "question": "What is normalization?",
+      "user_answer": "Normalization organizes data to reduce redundancy and improve integrity. Normal forms include 1NF, 2NF, 3NF, and BCNF.",
+      "human_score": 75,
+      "keywords": ["normalization", "redundancy", "integrity", "1NF", "2NF", "3NF", "BCNF"]
+    },
+    {
+      "test_id": 7,
+      "topic": "HR Interview",
+      "question": "Tell me about yourself.",
+      "user_answer": "I am a computer science student passionate about software development. I have experience in Python and web technologies. I've worked on several projects including a machine learning application.",
+      "human_score": 80,
+      "keywords": ["computer science", "software development", "Python", "projects", "machine learning"]
+    },
+    {
+      "test_id": 8,
+      "topic": "Operating Systems",
+      "question": "What is deadlock and how to prevent it?",
+      "user_answer": "Deadlock occurs when processes wait for resources held by each other. Prevention methods include mutual exclusion, hold and wait, no preemption, and circular wait.",
+      "human_score": 72,
+      "keywords": ["deadlock", "mutual exclusion", "hold and wait", "no preemption", "circular wait"]
+    }
+  ]
+}
