@@ -9,7 +9,7 @@ class Config:
     
     # Gemini API Settings
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
-    USE_GEMINI = os.getenv('USE_GEMINI', 'true').lower() == 'true'
+    USE_GEMINI = os.getenv('USE_GEMINI', 'false').lower() == 'true'
     
     # Application Settings
     MAX_QUESTIONS_PER_SESSION = 50
